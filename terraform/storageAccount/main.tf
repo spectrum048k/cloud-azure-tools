@@ -1,3 +1,4 @@
+# declare variables
 variable "resource_group_name" {
   type        = string
   description = "Name of an existing resource group"
@@ -30,6 +31,12 @@ variable "ipAllowList" {
   default     = []
 }
 
+variable "container_names" {
+  type        = list(string)
+  description = "List of Azure Blob container names to create"
+  default     = []
+}
+
 provider "azurerm" {
   features {}
 }
@@ -52,7 +59,17 @@ resource "azurerm_storage_account" "sa" {
   }
 }
 
+resource "azurerm_storage_container" "containers" {
+  count                 = length(var.container_names)
+  name                  = var.container_names[count.index]
+  storage_account_name  = azurerm_storage_account.sa.name
+}
+
 output "storage_account_id" {
   value = azurerm_storage_account.sa.id
   description = "The resource ID of the deployed storage account."
+}
+
+output "container_names" {
+  value = azurerm_storage_container.containers.*.name
 }
