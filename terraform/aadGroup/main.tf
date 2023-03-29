@@ -17,16 +17,20 @@ variable "group_names" {
   default     = []
 }
 
+variable "groups" {
+  type = map
+}
+
 # Configure the Azure Active Directory Provider
 provider "azuread" {
 }
 
 data "azuread_client_config" "current" {}
 
-# NB: array variables not usuable in prod as group is linked to array index
 resource "azuread_group" "group" {
-  count                   = length(var.group_names)
-  display_name            = var.group_names[count.index]
+  for_each = var.groups
+
+  display_name            = each.value
   owners                  = [data.azuread_client_config.current.object_id]
   security_enabled        = true
   description             = "group created by terraform aad provider"
@@ -34,5 +38,5 @@ resource "azuread_group" "group" {
 }
 
 output "group_id" {
-  value = azuread_group.group.*.id
+  value = values(azuread_group.group).*.id
 }
