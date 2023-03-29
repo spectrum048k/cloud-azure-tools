@@ -11,13 +11,8 @@ terraform {
 }
 
 # variables
-variable "group_names" {
-  type        = list(string)
-  description = "List of Azure AD group names"
-  default     = []
-}
-
 variable "groups" {
+  description = "Name/value map of Azure AD group names"
   type = map
 }
 
