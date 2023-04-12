@@ -10,28 +10,15 @@ terraform {
   }
 }
 
-# variables
-variable "groups" {
-  description = "Name/value map of Azure AD group names"
-  type = map
-}
-
 # Configure the Azure Active Directory Provider
 provider "azuread" {
 }
 
-data "azuread_client_config" "current" {}
-
 resource "azuread_group" "group" {
   for_each = var.groups
 
-  display_name            = each.value
-  owners                  = [data.azuread_client_config.current.object_id]
+  display_name            = each.value.name
   security_enabled        = true
-  description             = "group created by terraform aad provider"
+  description             = each.value.description
   prevent_duplicate_names = true
-}
-
-output "group_id" {
-  value = values(azuread_group.group).*.id
 }
