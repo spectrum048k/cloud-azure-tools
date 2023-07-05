@@ -35,7 +35,7 @@ do
       # loop through all NSGs in the subscription
       for nsg_name in $nsg_list
       do
-        filename="$nsg_name.json"
+        filename="$subscription_id:$resource_group_name:$nsg_name.json"
         echo "filename:" $filename
 
         # export NSG rules to a variable
