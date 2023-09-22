@@ -68,7 +68,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-08-01'
     deleteRetentionPolicy: {
       enabled: false
     }
-    
+    isVersioningEnabled:true
   }
 }
 
