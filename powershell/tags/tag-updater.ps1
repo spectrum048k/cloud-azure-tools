@@ -19,7 +19,8 @@ function Update-AllResourceGroupTags {
       [string]$ManagementGroupName,
       [string]$TenantId,
       [object]$CSVData,
-      [string]$KeyTag
+      [string]$KeyTag,
+      [bool]$Deploy = $false
   )
 
   # Install the Azure PowerShell module if you haven't already
@@ -40,54 +41,81 @@ function Update-AllResourceGroupTags {
   $tagChanges = @()
 
   foreach ($sub in $subs) {
-      # Set the current subscription context
-      Set-AzContext -SubscriptionId $sub.DisplayName
+    # Set the current subscription context
+    Set-AzContext -SubscriptionId $sub.DisplayName
 
-      # Get information about the current subscription
-      $subscription = Get-AzSubscription
+    # Get all resource groups within the subscription
+    $resourceGroups = Get-AzResourceGroup
 
-      # Get all resource groups within the subscription
-      $resourceGroups = Get-AzResourceGroup
+    # Iterate through each resource group
+    foreach ($resourceGroup in $resourceGroups) {
+      $tags = (Get-AzResourceGroup -Name $resourceGroup.ResourceGroupName).Tags
 
-      # Iterate through each resource group
-      foreach ($resourceGroup in $resourceGroups) {
-        $tags = (Get-AzResourceGroup -Name $resourceGroup.ResourceGroupName).Tags
+      if ($null -ne $tags -and $tags.ContainsKey($KeyTag)) {
+        # lookup csv version of tag, filter the rows where the specified field matches the specified value
+        $matchingRows = $CSVData.Where({ $_.$KeyTag -eq $tags[$KeyTag] })
+        $count = $matchingRows.Count
 
-        if ($null -ne $tags -and $tags.ContainsKey($KeyTag)) {
-          # lookup csv version of tag, filter the rows where the specified field matches the specified value
-          $matchingRows = $CSVData.Where({ $_.$KeyTag -eq $tags[$KeyTag] })
+        if ($count -eq 0) {
+          Write-Output "No matching rows found in CSV data for $($KeyTag) value $($tags[$KeyTag])"
+        } elseif ($count -eq 1) {
+          Write-Output "One matching row found in CSV data for $($KeyTag) value $($tags[$KeyTag])"
 
-          $count = $matchingRows.Count
+          $currentTagsFlat = Get-Flatten-HashTable($tags)
+          Write-Output "Subscription $($sub.DisplayName) resource group $($resourceGroup.ResourceGroupName), current tags: $($currentTagsFlat)"
 
-          if ($count -eq 0) {
-            Write-Output "No matching rows found in CSV data for $($KeyTag) value $tags[$KeyTag]"
-          } elseif ($count -eq 1) {
-            Write-Debug "One matching rows found in CSV data for $($KeyTag) value $tags[$KeyTag]"
-          } else {
-            $errmsg = "$($count) duplicate rows found in CSV data for $($KeyTag) value $($tags[$KeyTag])"
-            throw $errmsg
+          Get-CheckTags -tags $tags -data $matchingRows[0]
+          
+          if ($Deploy) {
+            $result = Update-AzTag -ResourceId $resourceGroup.ResourceId -Tag $tags -Operation Merge
+
+            if (-not $?) {
+              Write-Output $result
+            }
           }
-
-          Write-Output "Subscription $($sub.DisplayName) resource group $($resourceGroup.ResourceGroupName)"
-          $currentTags = Flatten-HashTable($tags)
-          Write-Output "Current tags $($currentTags)"
-
-          # $newTags = @{
-          #   "Environment" = "Production"
-          #   "Owner" = "John Doe"
-          #   "Department" = "IT"
-          # }
-
-          # Update-ResourceGroupTag -ResourceGroup $resourceGroup -Tags $tags
-        }
-        else {
-          Write-Output "Subscription $($sub.DisplayName) resource group $($resourceGroup.ResourceGroupName) does not have key tag $($KeyTag)"
+        } else {
+          $errmsg = "$($count) duplicate rows found in CSV data for $($KeyTag) value $($tags[$KeyTag])"
+          throw $errmsg
         }
       }
+      else {
+        Write-Output "Subscription $($sub.DisplayName) resource group $($resourceGroup.ResourceGroupName) does not have key tag $($KeyTag)"
+      }
+    }
   }
 }
 
-function Flatten-HashTable {
+
+function Get-CheckTags {
+  param (
+      $tags,
+      [object]$data
+  )
+
+  $changes = @()
+
+  
+  
+  return $tags
+}
+
+function Set-Tag {
+  param (
+    $tags,
+    [string]$keyToCheck,
+    [string]$valueToCheck
+  )
+
+  if ($tags.ContainsKey($keyToCheck) -and $tags[$keyToCheck] -eq $valueToCheck) {
+    
+  }
+  else {
+    $tags[$keyToCheck] = $valueToCheck
+  }
+
+}
+
+function Get-Flatten-HashTable {
   param (
       [hashtable]$HashTable
   )
@@ -95,16 +123,15 @@ function Flatten-HashTable {
   # Convert the hashtable to a single line string
   $flatString = ($HashTable.GetEnumerator() | ForEach-Object { "$($_.Key):$($_.Value)" }) -join ', '
 
-  # Return the flattened string
   return $flatString
 }
 
 $data = Import-CSVData "organizations-100.csv"
 
 Update-AllResourceGroupTags -ManagementGroupName `
-"production" -TenantId "" `
--CSVData $data `
--KeyTag "OrgId"
+  "production" -TenantId "" `
+  -CSVData $data `
+  -KeyTag "OrgId"
 
 # Now $data contains the data from your CSV file
 # You can access the data using properties of the objects in the array
