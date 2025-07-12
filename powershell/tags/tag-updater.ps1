@@ -93,8 +93,8 @@ function Get-CheckTags {
   )
 
   $changes = @()
-
   
+  Set-Tag -tags $tags -keyToCheck "Country" -valueToCheck $data.Country
   
   return $tags
 }
@@ -129,7 +129,7 @@ function Get-Flatten-HashTable {
 $data = Import-CSVData "organizations-100.csv"
 
 Update-AllResourceGroupTags -ManagementGroupName `
-  "production" -TenantId "" `
+  "production" -TenantId "de62f6b5-50bb-4689-8981-140efd114aa2" `
   -CSVData $data `
   -KeyTag "OrgId"
 

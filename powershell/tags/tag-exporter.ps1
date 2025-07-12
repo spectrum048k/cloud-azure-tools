@@ -54,4 +54,4 @@ function Export-ResourceGroupTagsToCsv {
 $fileName = "rg-tags.csv"
 $managementGroupName = "production"
 Export-ResourceGroupTagsToCsv -FileName $fileName -ManagementGroupName $managementGroupName `
--TenantId ""
+-TenantId "de62f6b5-50bb-4689-8981-140efd114aa2"
