@@ -5,8 +5,14 @@
     "storageAccountName": {
       "value": ""
     },
-    "ipAllowList": {
+    "storageAccountSku": {
+      "value": "Standard_LRS"
+    },
+    "location": {
       "value": ""
+    },
+    "ipAllowList": {
+      "value": []
     },
     "containerNames": {
       "value": []

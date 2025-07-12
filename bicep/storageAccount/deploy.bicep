@@ -20,8 +20,8 @@ param storageAccountSku string = 'Standard_LRS'
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Optional. Allow list of public IPs allowed to access storage account.')
-param ipAllowList string = ''
+@description('Optional. Array of public IPs allowed to access storage account. Leave empty to allow all Azure services.')
+param ipAllowList array = []
 
 @description('The name of the blob containers.')
 param containerNames array = []
@@ -39,13 +39,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
       bypass: 'AzureServices'
-      ipRules: [
-        {
-          value: ipAllowList
-          action: 'Allow'
-        }
-      ]
-      defaultAction: 'Deny'
+      ipRules: [for ip in ipAllowList: {
+        value: ip
+        action: 'Allow'
+      }]
+      defaultAction: empty(ipAllowList) ? 'Allow' : 'Deny'
     }
   }
 }

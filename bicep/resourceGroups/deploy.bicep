@@ -14,6 +14,8 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = [for na
   tags: tags
 }]
 
-output roleAssignments array = [for (name, i) in names: {
-  rgName: resourceGroup[i].name
+output resourceGroups array = [for (name, i) in names: {
+  name: resourceGroup[i].name
+  id: resourceGroup[i].id
+  location: resourceGroup[i].location
 }]
