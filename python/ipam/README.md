@@ -12,37 +12,17 @@ This module provides functions to:
 ## Installation
 Install required packages:
 
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
 Set your Azure subscription ID as an environment variable:
 
 ```bash
 export AZURE_SUBSCRIPTION_ID="<your-subscription-id>"
+# Optional for service principal authentication:
+export AZURE_TENANT_ID="<your-tenant-id>"
+export AZURE_CLIENT_ID="<your-client-id>"
+export AZURE_CLIENT_SECRET="<your-client-secret>"
 ```
 
-Example usage:
-
-```python
-import os
-from ipam.azure_vnet_ipam import get_available_ips_in_vnet, get_available_subnet_range
-
-subscription_id = os.getenv("AZURE_SUBSCRIPTION_ID", "")
-resource_group = "<your-resource-group>"
-vnet_name = "<your-vnet-name>"
-
-available_ips = get_available_ips_in_vnet(subscription_id, resource_group, vnet_name)
-print(f"Available IPs in VNet: {available_ips}")
-
-# Suggest a subnet range for a new subnet of minimum size 8
-subnet_size = 8
-subnet_range = get_available_subnet_range(subscription_id, resource_group, vnet_name, subnet_size)
-print(f"Suggested subnet range for size {subnet_size}: {subnet_range}")
-```
-
+See `test_vnet_ipam.py` for example usage.
 
 ## Function Reference
 ### get_available_ips_in_vnet(subscription_id: str, resource_group: str, vnet_name: str) -> int
