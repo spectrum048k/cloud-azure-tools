@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv
+venv/
+ENV/
+env/
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebooks
+*.ipynb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Azure
+*.azure/
+
+# Test and coverage
+.coverage
+htmlcov/
+
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+python/ipam/venv/
+
+# Requirements
+*.egg-info/
+dist/
+build/
+
+# Misc
+*.swp
+*.swo
+
+# Ignore secrets
+.env*
